@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>401_WORLD_ARCHITECT_v6.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        /* Chosen Palette: Aqua Blue, Cyber Pink, and Isometric Grid Grey */
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:wght@400;700;900&family=Permanent+Marker&display=swap');
+
+        :root {
+            --aqua-blue: #007AFF;
+            --pinstripe: rgba(0, 122, 255, 0.05);
+            --win-grey: #d4d0c8;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+            /* OS X Pinstripe Background */
+            background-image: linear-gradient(var(--pinstripe) 1px, transparent 1px);
+            background-size: 100% 4px;
+            background-attachment: fixed;
+            color: #1F2937;
+        }
+
+        .font-mono { font-family: 'DM Mono', monospace; }
+        .font-scrawl { font-family: 'Permanent Marker', cursive; }
+
+        /* Isometric Grid Floor */
+        .iso-grid {
+            background-image: 
+                linear-gradient(30deg, #e5e7eb 12%, transparent 12.5%, transparent 87%, #e5e7eb 87.5%, #e5e7eb),
+                linear-gradient(150deg, #e5e7eb 12%, transparent 12.5%, transparent 87%, #e5e7eb 87.5%, #e5e7eb),
+                linear-gradient(30deg, #e5e7eb 12%, transparent 12.5%, transparent 87%, #e5e7eb 87.5%, #e5e7eb),
+                linear-gradient(150deg, #e5e7eb 12%, transparent 12.5%, transparent 87%, #e5e7eb 87.5%, #e5e7eb),
+                linear-gradient(60deg, #d1d5db 25%, transparent 25.5%, transparent 75%, #d1d5db 75%, #d1d5db),
+                linear-gradient(60deg, #d1d5db 25%, transparent 25.5%, transparent 75%, #d1d5db 75%, #d1d5db);
+            background-size: 80px 140px;
+            background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+            transform: perspective(1000px) rotateX(60deg) translateY(-200px);
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        /* Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin: auto;
+            height: 250px;
+        }
+
+        /* Polaroid / Collage Card */
+        .collage-card {
+            background: white;
+            padding: 12px 12px 40px 12px;
+            border: 1px solid #ddd;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transform: rotate(-1deg);
+        }
+
+        /* Tape Element */
+        .washi-tape {
+            position: absolute;
+            width: 100px;
+            height: 30px;
+            background: rgba(0, 122, 255, 0.3);
+            backdrop-filter: blur(2px);
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%) rotate(2deg);
+            z-index: 10;
+        }
+
+        /* Floating Tool Palette (Classic Software Vibe) */
+        .tool-palette {
+            background: var(--win-grey);
+            border: 2px solid #fff;
+            border-right-color: #404040;
+            border-bottom-color: #404040;
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .btn-aqua-gloss {
+            background: linear-gradient(180deg, #fff 0%, #007AFF 10%, #005bb7 100%);
+            border-radius: 999px;
+            border: 1px solid #004a99;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 10px rgba(0,122,255,0.3);
+        }
+
+        /* Scroll Progress Indicator */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: #ff00ff;
+            z-index: 100;
+        }
+
+        .viewport-frame {
+            border: 1px solid rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div id="progress-bar" style="width: 0%;"></div>
+
+    <!-- TOP SYSTEM BAR (MAC OS X STYLE) -->
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-300 h-8 flex items-center justify-between px-4 text-[11px] font-bold">
+        <div class="flex items-center gap-4">
+            <span class="text-lg">❂</span>
+            <span class="hover:bg-blue-600 hover:text-white px-2 rounded cursor-default">About Architect</span>
+            <span class="hover:bg-blue-600 hover:text-white px-2 rounded cursor-default">View</span>
+            <span class="hover:bg-blue-600 hover:text-white px-2 rounded cursor-default">World_Building</span>
+        </div>
+        <div class="flex items-center gap-4 font-mono text-[9px]">
+            <span id="current-time">10:00 PM</span>
+            <span class="text-blue-600">RENDER_MODE: ACTIVE</span>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION: THE VIEWPORT -->
+    <section class="pt-24 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center">
+        <div class="relative w-full text-center lg:text-left grid lg:grid-cols-2 gap-12 items-center">
+            
+            <div class="z-10">
+                <div class="font-scrawl text-blue-600 text-xl mb-4 transform -rotate-2">
+                    // bridging the gap
+                </div>
+                <h1 class="text-7xl md:text-9xl font-black text-blue-950 tracking-tighter leading-[0.8] mb-8">
+                    401<br><span class="text-blue-600 italic">WORLD</span><br>ARCHITECT.
+                </h1>
+                <p class="text-lg font-mono text-gray-500 max-w-md bg-white/50 p-4 border border-dashed border-blue-200">
+                    Converting raw Dropbox chaos into immersive Milanote lore. One person. Dual brain capability.
+                </p>
+                <div class="mt-10 flex gap-4">
+                    <button onclick="scrollToSection('workspace')" class="btn-aqua-gloss px-10 py-3 font-bold uppercase tracking-widest text-xs">Enter Workspace</button>
+                    <button onclick="scrollToSection('world')" class="font-scrawl text-pink-600 hover:scale-110 transition-transform">view our world -></button>
+                </div>
+            </div>
+
+            <!-- AIM AWAY MESSAGE (FIXED TO LOOK LIKE THE UPLOADED JPG) -->
+            <div class="flex justify-center">
+                <div class="tool-palette w-full max-w-[400px]">
+                    <div class="bg-blue-800 text-white px-2 py-1 flex justify-between items-center text-[10px] font-bold">
+                        <span>🏃 Edit Away Message</span>
+                        <div class="flex gap-0.5">
+                            <span class="bg-gray-300 text-black px-1 border border-black">_</span>
+                            <span class="bg-gray-300 text-black px-1 border border-black">X</span>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-gray-200">
+                        <div class="bg-white border-2 border-gray-600 p-6 min-h-[140px] text-center flex flex-col justify-center">
+                            <p class="text-xl font-bold" style="color: #ff00ff; font-family: 'Permanent Marker';">
+                                "don't cry because its over,<br>smile because it happened"
+                            </p>
+                            <p class="mt-4 text-[10px] font-mono text-blue-600 uppercase font-bold tracking-tighter">
+                                // brb building roomies crib
+                            </p>
+                        </div>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-[9px] font-mono opacity-50">Saved: 02.07.2026</span>
+                            <button class="tool-palette px-6 py-1 text-xs font-bold hover:bg-gray-100">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION 01: THE 401 WORKSPACE (ISOMETRIC VIBE) -->
+    <section id="workspace" class="relative py-40 overflow-hidden">
+        <div class="iso-grid"></div> <!-- 3D GRID FLOOR -->
+
+        <div class="max-w-7xl mx-auto px-8 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-black text-blue-950 uppercase tracking-tighter mb-4 italic">THE 401 VIEWPORT</h2>
+                
+                <!-- THE RENDER TOGGLE -->
+                <div class="inline-flex bg-white/80 backdrop-blur rounded-full p-1 border border-blue-200 shadow-xl">
+                    <button id="mode-bible" onclick="toggleWorkspace('bible')" class="px-8 py-2 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white transition-all shadow-lg">Wireframe (Bible)</button>
+                    <button id="mode-lore" onclick="toggleWorkspace('lore')" class="px-8 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-600 transition-all">Texture (Lore)</button>
+                </div>
+            </div>
+
+            <!-- FLOATING WORKSPACE CONTENT -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                
+                <!-- Left: Logic Stats -->
+                <div class="lg:col-span-4 tool-palette p-6 bg-white/90">
+                    <div class="text-[10px] font-mono font-bold text-blue-600 mb-4">// SYSTEM_ANALYSIS.EXE</div>
+                    <div class="chart-container">
+                        <canvas id="efficiencyChart"></canvas>
+                    </div>
+                    <div class="mt-6 font-scrawl text-sm text-gray-500 text-center">
+                        "If an asset isn't 2 clicks away,<br>it doesn't exist."
+                    </div>
+                </div>
+
+                <!-- Center: The Live Workspace -->
+                <div id="workspace-content" class="lg:col-span-8 flex flex-wrap gap-6 justify-center">
+                    <!-- Dynamic Content Cards -->
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 02: THE WORLD (MUHRA COLLAGE) -->
+    <section id="world" class="py-32 bg-white/40">
+        <div class="max-w-7xl mx-auto px-8">
+            <div class="mb-20">
+                <h3 class="text-sm font-black text-blue-600 font-mono tracking-[0.5em] mb-4 uppercase">Archive_01: Muhra</h3>
+                <h2 class="text-6xl font-black text-blue-950 leading-none">Narrative Dignity.</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <!-- Polaroid Collage -->
+                <div class="relative">
+                    <div class="washi-tape"></div>
+                    <div class="collage-card rotate-1">
+                        <div class="bg-gray-100 aspect-video mb-4 overflow-hidden relative">
+                             <div class="absolute inset-0 flex items-center justify-center font-scrawl text-gray-300 text-6xl opacity-20">MUHRA</div>
+                             <div class="p-8 text-sm italic text-blue-800">
+                                "I took a grassroots Syrian craft initiative and built an international brand narrative. I replaced 'charity tropes' with Narrative Dignity."
+                             </div>
+                        </div>
+                        <div class="flex justify-between items-center px-2">
+                             <span class="text-[10px] font-mono uppercase font-bold text-gray-400">Archived: 02/07/26</span>
+                             <span class="font-scrawl text-blue-600 text-sm">Together Boundless</span>
+                        </div>
+                    </div>
+                    <!-- Secondary Polaroid -->
+                    <div class="collage-card absolute -bottom-10 -right-10 w-2/3 -rotate-3 hidden md:block">
+                        <div class="bg-blue-50 p-4 border border-blue-100">
+                             <div class="chart-container h-40">
+                                 <canvas id="muhraChart"></canvas>
+                             </div>
+                        </div>
+                        <div class="text-[8px] font-mono mt-2 text-center uppercase tracking-widest">Impact: Narrative vs Charity</div>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="tool-palette p-6 bg-white border-t-8 border-t-blue-600">
+                        <h4 class="text-xl font-bold mb-4">The Muhra Framework</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-6">
+                            I shifted the focus from struggle to <strong>craftsmanship</strong>. This is exactly what the "Roomies House" represents—creating a space that people want to inhabit rather than just a product they buy.
+                        </p>
+                        <div class="font-scrawl text-blue-600 text-lg">
+                            "Break free of assumptions."
+                        </div>
+                    </div>
+                    <!-- Small Biz Proof -->
+                    <div class="p-6 bg-blue-900 text-white rounded-2xl shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">💽</div>
+                        <h4 class="font-bold mb-2 italic">Beyond Analog Logic</h4>
+                        <p class="text-xs text-blue-100 leading-relaxed">
+                            My personal small businesses served as the prototype for high-volume asset sorting. I know how to make inspiration tactile.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 03: THE SYNTHESIS (SYSTEM MATRIX) -->
+    <section id="matrix" class="py-32 flex justify-center">
+        <div class="max-w-4xl w-full px-8 text-center">
+            <h3 class="text-5xl font-black text-blue-950 mb-10 tracking-tighter uppercase italic">The Synthesis Matrix</h3>
+            <div class="tool-palette p-10 bg-white">
+                <div class="chart-container h-80">
+                    <canvas id="skillsRadar"></canvas>
+                </div>
+                <div class="mt-12 flex justify-center gap-10">
+                    <div class="text-left border-l-4 border-blue-600 pl-4">
+                        <span class="text-[10px] font-mono font-bold uppercase text-blue-600">The Brain</span>
+                        <p class="text-xs text-gray-500">Dropbox Syncing + Template Logic</p>
+                    </div>
+                    <div class="text-left border-l-4 border-pink-600 pl-4">
+                        <span class="text-[10px] font-mono font-bold uppercase text-pink-600">The World</span>
+                        <p class="text-xs text-gray-500">Lore Building + Visual Narrative</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINAL CTA: THE TERMINAL -->
+    <footer class="py-40 text-center relative">
+        <div class="font-scrawl text-blue-600 text-4xl mb-6">ready to build the crib?</div>
+        <h2 class="text-7xl font-black text-blue-950 mb-10 tracking-tighter uppercase italic">Let's Connect.</h2>
+        <button class="btn-aqua-gloss px-20 py-5 text-lg font-black uppercase tracking-widest">Send_Signal.exe</button>
+        <p class="mt-20 text-[10px] font-mono opacity-30 uppercase tracking-[1em]">System.Exit(0)</p>
+    </footer>
+
+    <!-- DOCK NAVIGATION -->
+    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
+        <div class="bg-white/40 backdrop-blur-xl p-2 rounded-2xl border border-white/60 shadow-2xl flex gap-4">
+            <button onclick="scrollToSection('workspace')" class="w-12 h-12 bg-blue-600 text-white rounded-xl shadow-lg flex items-center justify-center text-xl">🧩</button>
+            <button onclick="scrollToSection('world')" class="w-12 h-12 bg-white text-blue-600 rounded-xl shadow-lg flex items-center justify-center text-xl border border-blue-100">🎡</button>
+            <button onclick="window.scrollTo(0,0)" class="w-12 h-12 bg-gray-900 text-white rounded-xl shadow-lg flex items-center justify-center text-xl">🏠</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONTENT DATA ---
+        const workspaceModes = {
+            bible: {
+                items: [
+                    { title: "Identity Registry", detail: "Logo variants, hex codes, typography mapping.", icon: "🎨" },
+                    { title: "Collection Stacks", detail: "Repeatable templates for every hat/shirt drop.", icon: "📦" },
+                    { title: "Dropbox Mirror", detail: "Automated folder maps for asset selects.", icon: "☁️" }
+                ],
+                btnActive: 'bible'
+            },
+            lore: {
+                items: [
+                    { title: "Roomies' Crib", detail: "Visual storylines, mood scrapbooks, lore building.", icon: "🏡" },
+                    { title: "The Archive", detail: "Shooting storylines and texture archives.", icon: "🎞️" },
+                    { title: "Pre-Scary Inspo", detail: "Curated 2000s digital optimism assets.", icon: "🎠" }
+                ],
+                btnActive: 'lore'
+            }
+        };
+
+        // --- CHART CONFIG ---
+        let effChart, muhraChart, radarChart;
+
+        function initCharts() {
+            effChart = new Chart(document.getElementById('efficiencyChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['RAW', 'CURATED', 'BLUEPRINT'],
+                    datasets: [{ label: 'Search Time', data: [400, 150, 10], borderColor: '#007AFF', tension: 0.4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            muhraChart = new Chart(document.getElementById('muhraChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Unity', 'Story', 'Market'],
+                    datasets: [{ label: 'Impact', data: [95, 98, 85], backgroundColor: '#007AFF' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            radarChart = new Chart(document.getElementById('skillsRadar').getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['Organization', 'World Building', 'Dropbox', 'Visuals', 'Templates', 'Lore'],
+                    datasets: [{ data: [98, 95, 100, 92, 95, 96], backgroundColor: 'rgba(0, 122, 255, 0.1)', borderColor: '#007AFF' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // --- INTERACTIONS ---
+        function toggleWorkspace(mode) {
+            const data = workspaceModes[mode];
+            const content = document.getElementById('workspace-content');
+            
+            document.getElementById('mode-bible').className = mode === 'bible' ? "px-8 py-2 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white transition-all shadow-lg" : "px-8 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-600 transition-all";
+            document.getElementById('mode-lore').className = mode === 'lore' ? "px-8 py-2 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white transition-all shadow-lg" : "px-8 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-600 transition-all";
+
+            content.innerHTML = data.items.map(item => `
+                <div class="collage-card w-64 transform hover:scale-105 transition-all">
+                    <div class="bg-gray-50 aspect-square flex items-center justify-center text-4xl mb-4 border border-gray-200">
+                        ${item.icon}
+                    </div>
+                    <h5 class="font-bold text-sm mb-1">${item.title}</h5>
+                    <p class="text-[9px] font-mono text-gray-500 leading-tight">${item.detail}</p>
+                </div>
+            `).join('');
+        }
+
+        function scrollToSection(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
+
+        window.onscroll = () => {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        };
+
+        window.onload = () => {
+            initCharts();
+            toggleWorkspace('bible');
+            setInterval(() => {
+                document.getElementById('current-time').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
